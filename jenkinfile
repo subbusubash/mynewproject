@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    // Groovy code for build steps
+                    echo 'Building the project...'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                script {
+                    // Running a Python script
+                    sh 'python3 test_script.py'
+                }
+            }
+        }
+    }
+}
+
