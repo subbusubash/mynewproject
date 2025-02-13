@@ -1,12 +1,14 @@
 pipeline {
-    agent {
-        docker { image 'node:14' }
-    }
+    agent any
     stages {
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Building inside a Docker container'
-                sh 'npm install'
+                sh 'pip install -r requirements.txt'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'pytest tests/'  // Run tests in the "tests" directory
             }
         }
     }
