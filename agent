@@ -1,0 +1,14 @@
+pipeline {
+    agent {
+        docker { image 'node:14' }
+    }
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building inside a Docker container'
+                sh 'npm install'
+            }
+        }
+    }
+}
+
