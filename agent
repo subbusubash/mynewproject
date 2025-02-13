@@ -1,16 +1,62 @@
 pipeline {
     agent any
+
+    environment {
+        DOCKER_IMAGE = 'myapp:latest'
+        REGISTRY = 'myregistry.com'
+        IMAGE_NAME = 'myapp'
+    }
+
     stages {
-        stage('Install Dependencies') {
+        stage('Checkout') {
             steps {
-                sh 'pip install -r requirements.txt'
+                checkout scm
             }
         }
-        stage('Test') {
+
+        stage('Build Docker Image') {
             steps {
-                sh 'pytest tests/'  // Run tests in the "tests" directory
+                script {
+                    docker.build(DOCKER_IMAGE)
+                }
+            }
+        }
+
+        stage('Run Tests in Container') {
+            steps {
+                script {
+                    docker.image(DOCKER_IMAGE).inside {
+                        sh './run_tests.sh'  // Run tests inside the Docker container
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry("https://${REGISTRY}", 'docker-credentials') {
+                        docker.image(DOCKER_IMAGE).push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "Deploying the Docker image..."
+                // Deploy the Docker image to the production server
+                sh 'docker-compose up -d'  // Adjust based on your deploy strategy
             }
         }
     }
-}
 
+    post {
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}
